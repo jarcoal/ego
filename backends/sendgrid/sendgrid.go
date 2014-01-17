@@ -15,17 +15,17 @@ import (
 
 const SENDGRID_API_URL = "https://sendgrid.com/api/mail.send.json"
 
-var _ backends.Backend = (*SendGridBackend)(nil)
+var _ backends.Backend = (*sendGridBackend)(nil)
 
-func NewSendGridBackend(username, password string) *SendGridBackend {
-	return &SendGridBackend{username, password}
+func NewBackend(username, password string) backends.Backend {
+	return &sendGridBackend{username, password}
 }
 
-type SendGridBackend struct {
+type sendGridBackend struct {
 	username, password string
 }
 
-func (s *SendGridBackend) DispatchEmail(e *ego.Email) error {
+func (s *sendGridBackend) DispatchEmail(e *ego.Email) error {
 	// get the parameters we're going to be posting to sendgrid
 	params, err := s.paramsForEmail(e)
 	if err != nil {
@@ -46,7 +46,7 @@ func (s *SendGridBackend) DispatchEmail(e *ego.Email) error {
 	return nil
 }
 
-func (s *SendGridBackend) paramsForEmail(e *ego.Email) (url.Values, error) {
+func (s *sendGridBackend) paramsForEmail(e *ego.Email) (url.Values, error) {
 	params := url.Values{}
 
 	// apply our credentials
