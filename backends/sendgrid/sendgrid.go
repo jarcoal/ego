@@ -1,6 +1,6 @@
 // SendGrid
 // API Docs: http://sendgrid.com/docs/API_Reference/Web_API/mail.html
-package backends
+package sendgrid
 
 import (
 	"encoding/json"

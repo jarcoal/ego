@@ -1,6 +1,6 @@
 // Mandrill
 // API Docs: https://mandrillapp.com/api/docs/messages.JSON.html
-package backends
+package mandrill
 
 import (
 	"bytes"
