@@ -9,17 +9,9 @@ import (
 	"time"
 )
 
-func TestMandrillBackendCredentials(t *testing.T) {
-	apiKey := "abc123"
-	b := NewMandrillBackend(apiKey)
+var b = mandrillBackend{"abc123"}
 
-	if b.apiKey != apiKey {
-		t.FailNow()
-	}
-}
-
-func TestMandrillBackendWrapper(t *testing.T) {
-	b := NewMandrillBackend("")
+func TestBackendWrapper(t *testing.T) {
 	e := testutils.TestEmail()
 
 	// set some additional properties
@@ -53,8 +45,7 @@ func TestMandrillBackendWrapper(t *testing.T) {
 	}
 }
 
-func TestMandrillBackendEmail(t *testing.T) {
-	b := NewMandrillBackend("")
+func TestBackendEmail(t *testing.T) {
 	e := testutils.TestEmail()
 
 	me, err := b.mandrillEmailForEmail(e)
@@ -107,8 +98,7 @@ func TestMandrillBackendEmail(t *testing.T) {
 	}
 }
 
-func TestMandrillBackendAttachments(t *testing.T) {
-	b := NewMandrillBackend("")
+func TestBackendAttachments(t *testing.T) {
 	e := testutils.TestEmail()
 
 	attachment := testutils.TestAttachment(t)

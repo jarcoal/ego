@@ -16,17 +16,17 @@ import (
 const MANDRILL_DELIVERY_TIME_FMT = "2006-01-02T15:04:05"
 const MANDRILL_API_URL = "https://mandrillapp.com/api/1.0/messages/%s.json"
 
-var _ backends.Backend = (*MandrillBackend)(nil)
+var _ backends.Backend = (*mandrillBackend)(nil)
 
-func NewMandrillBackend(apiKey string) *MandrillBackend {
-	return &MandrillBackend{apiKey}
+func NewBackend(apiKey string) backends.Backend {
+	return &mandrillBackend{apiKey}
 }
 
-type MandrillBackend struct {
+type mandrillBackend struct {
 	apiKey string
 }
 
-func (m *MandrillBackend) DispatchEmail(e *ego.Email) error {
+func (m *mandrillBackend) DispatchEmail(e *ego.Email) error {
 	// convert the email to a mandrillEmail struct that will be json-serialized and sent out
 	me, err := m.mandrillEmailForEmail(e)
 	if err != nil {
@@ -69,7 +69,7 @@ func (m *MandrillBackend) DispatchEmail(e *ego.Email) error {
 	return nil
 }
 
-func (m *MandrillBackend) mandrillEmailForEmail(e *ego.Email) (*mandrillEmail, error) {
+func (m *mandrillBackend) mandrillEmailForEmail(e *ego.Email) (*mandrillEmail, error) {
 	me := &mandrillEmail{
 		To:                 make([]*mandrillRecipient, 0, len(e.To)),
 		Attachments:        make([]*mandrillAttachment, 0, len(e.Attachments)),
@@ -112,7 +112,7 @@ func (m *MandrillBackend) mandrillEmailForEmail(e *ego.Email) (*mandrillEmail, e
 	return me, nil
 }
 
-func (m *MandrillBackend) wrapMandrillEmail(e *ego.Email, me *mandrillEmail) map[string]interface{} {
+func (m *mandrillBackend) wrapMandrillEmail(e *ego.Email, me *mandrillEmail) map[string]interface{} {
 	wrapper := map[string]interface{}{
 		"key":     m.apiKey,
 		"message": me,
