@@ -1,6 +1,6 @@
 // random test data from http://www.databasetestdata.com/
 // hopefully it doesn't collide with any actual addresses :)
-package backends
+package testutils
 
 import (
 	"github.com/jarcoal/ego"
@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func testAddresses() []*mail.Address {
+func TestAddresses() []*mail.Address {
 	return []*mail.Address{
 		{Name: "Nyasia Block", Address: "jade@austen.name"},
 		{Name: "Erin Dare", Address: "otilia@hermina.io"},
@@ -24,8 +24,8 @@ func testAddresses() []*mail.Address {
 	}
 }
 
-func testEmail() *ego.Email {
-	addresses := testAddresses()
+func TestEmail() *ego.Email {
+	addresses := TestAddresses()
 
 	return &ego.Email{
 		To:       addresses[0:7],
@@ -38,10 +38,10 @@ func testEmail() *ego.Email {
 	}
 }
 
-func testAttachment(t *testing.T) *ego.Attachment {
-	file, err := os.Open("../README.md")
+func TestAttachment(t *testing.T) *ego.Attachment {
+	file, err := os.Open("../../README.md")
 	if err != nil {
-		t.FailNow()
+		t.Fatal(err)
 	}
 	return &ego.Attachment{"test-file.txt", "text/plain", file}
 }

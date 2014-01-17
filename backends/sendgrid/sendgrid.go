@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/jarcoal/ego"
+	"github.com/jarcoal/ego/backends"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -14,7 +15,7 @@ import (
 
 const SENDGRID_API_URL = "https://sendgrid.com/api/mail.send.json"
 
-var _ Backend = (*SendGridBackend)(nil)
+var _ backends.Backend = (*SendGridBackend)(nil)
 
 func NewSendGridBackend(username, password string) *SendGridBackend {
 	return &SendGridBackend{username, password}

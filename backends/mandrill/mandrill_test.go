@@ -2,6 +2,7 @@ package backends
 
 import (
 	"encoding/base64"
+	"github.com/jarcoal/ego/testutils"
 	"io"
 	"io/ioutil"
 	"testing"
@@ -19,7 +20,7 @@ func TestMandrillBackendCredentials(t *testing.T) {
 
 func TestMandrillBackendWrapper(t *testing.T) {
 	b := NewMandrillBackend("")
-	e := testEmail()
+	e := testutils.TestEmail()
 
 	// set some additional properties
 	e.DeliveryTime = time.Now()
@@ -54,7 +55,7 @@ func TestMandrillBackendWrapper(t *testing.T) {
 
 func TestMandrillBackendEmail(t *testing.T) {
 	b := NewMandrillBackend("")
-	e := testEmail()
+	e := testutils.TestEmail()
 
 	me, err := b.mandrillEmailForEmail(e)
 	if err != nil {
@@ -108,9 +109,9 @@ func TestMandrillBackendEmail(t *testing.T) {
 
 func TestMandrillBackendAttachments(t *testing.T) {
 	b := NewMandrillBackend("")
-	e := testEmail()
+	e := testutils.TestEmail()
 
-	attachment := testAttachment(t)
+	attachment := testutils.TestAttachment(t)
 	e.Attachments = append(e.Attachments, attachment)
 
 	me, err := b.mandrillEmailForEmail(e)

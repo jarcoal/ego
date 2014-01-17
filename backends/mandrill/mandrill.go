@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/jarcoal/ego"
+	"github.com/jarcoal/ego/backends"
 	"io/ioutil"
 	"net/http"
 )
@@ -15,7 +16,7 @@ import (
 const MANDRILL_DELIVERY_TIME_FMT = "2006-01-02T15:04:05"
 const MANDRILL_API_URL = "https://mandrillapp.com/api/1.0/messages/%s.json"
 
-var _ Backend = (*MandrillBackend)(nil)
+var _ backends.Backend = (*MandrillBackend)(nil)
 
 func NewMandrillBackend(apiKey string) *MandrillBackend {
 	return &MandrillBackend{apiKey}

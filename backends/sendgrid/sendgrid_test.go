@@ -3,6 +3,7 @@ package backends
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/jarcoal/ego/testutils"
 	"io"
 	"io/ioutil"
 	"net/url"
@@ -25,7 +26,7 @@ func TestSendGridBackendCredentials(t *testing.T) {
 
 func TestSendGridBackendGeneral(t *testing.T) {
 	b := NewSendGridBackend("", "")
-	e := testEmail()
+	e := testutils.TestEmail()
 
 	params, err := b.paramsForEmail(e)
 	if err != nil {
@@ -63,7 +64,7 @@ func TestSendGridBackendGeneral(t *testing.T) {
 
 func TestSendGridBackendCategories(t *testing.T) {
 	b := NewSendGridBackend("", "")
-	e := testEmail()
+	e := testutils.TestEmail()
 
 	params, err := b.paramsForEmail(e)
 	if err != nil {
@@ -78,7 +79,7 @@ func TestSendGridBackendCategories(t *testing.T) {
 
 func TestSendGridBackendTemplating(t *testing.T) {
 	b := NewSendGridBackend("", "")
-	e := testEmail()
+	e := testutils.TestEmail()
 	e.TemplateContext = make(map[string]string)
 
 	// we haven't added any template info yet
@@ -137,9 +138,9 @@ func TestSendGridBackendTemplating(t *testing.T) {
 
 func TestSendGridBackendAttachments(t *testing.T) {
 	b := NewSendGridBackend("", "")
-	e := testEmail()
+	e := testutils.TestEmail()
 
-	attachment := testAttachment(t)
+	attachment := testutils.TestAttachment(t)
 	e.Attachments = append(e.Attachments, attachment)
 
 	params, err := b.paramsForEmail(e)
