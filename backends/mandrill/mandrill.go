@@ -58,7 +58,7 @@ func (m *mandrillBackend) DispatchEmail(e *ego.Email) error {
 	if resp.StatusCode != 200 {
 		mandrillErr := &mandrillError{}
 
-		if err := json.NewDecoder(resp.Body).Decode(err); err != nil {
+		if err := json.NewDecoder(resp.Body).Decode(mandrillErr); err != nil {
 			return fmt.Errorf("received %s from mandrill and couldn't decode error payload: %s",
 				resp.StatusCode, err)
 		}
