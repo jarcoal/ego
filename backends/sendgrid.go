@@ -14,6 +14,8 @@ import (
 
 const SENDGRID_API_URL = "https://sendgrid.com/api/mail.send.json"
 
+var _ Backend = (*SendGridBackend)(nil)
+
 func NewSendGridBackend(username, password string) *SendGridBackend {
 	return &SendGridBackend{username, password}
 }

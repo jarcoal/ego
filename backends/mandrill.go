@@ -15,7 +15,7 @@ import (
 const MANDRILL_DELIVERY_TIME_FMT = "2006-01-02T15:04:05"
 const MANDRILL_API_URL = "https://mandrillapp.com/api/1.0/messages/%s.json"
 
-var _ ego.Backend = (*MandrillBackend)(nil)
+var _ Backend = (*MandrillBackend)(nil)
 
 func NewMandrillBackend(apiKey string) *MandrillBackend {
 	return &MandrillBackend{apiKey}
