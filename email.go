@@ -12,7 +12,7 @@ func NewEmail() *Email {
 		Bcc:             make([]*mail.Address, 0),
 		TrackClicks:     true,
 		TrackOpens:      true,
-		Attachments:     make([]*EmailAttachment, 0),
+		Attachments:     make([]*Attachment, 0),
 		TemplateContext: make(map[string]string),
 	}
 }
@@ -29,7 +29,7 @@ type Email struct {
 	HtmlBody, TextBody string
 
 	// Files/data to be attached to the email
-	Attachments []*EmailAttachment
+	Attachments []*Attachment
 
 	// Many email services offer a tagging system for emails so
 	// they can be grouped for analytics.
@@ -57,7 +57,7 @@ type Email struct {
 
 // AddAttachment is a convenience method for adding attachments to the message
 func (e *Email) AddAttachment(name, mimetype string, data io.Reader) {
-	e.Attachments = append(e.Attachments, &EmailAttachment{name, mimetype, data})
+	e.Attachments = append(e.Attachments, &Attachment{name, mimetype, data})
 }
 
 // AddRecipient is a convenience method for adding recipients to the message
@@ -68,8 +68,8 @@ func (e *Email) AddRecipient(name, email string) {
 	})
 }
 
-// EmailAttachment represents a piece of data to be attached to an email.
-type EmailAttachment struct {
+// Attachment represents a piece of data to be attached to an email.
+type Attachment struct {
 	Name, Mimetype string
 	Data           io.Reader
 }

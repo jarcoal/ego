@@ -3,9 +3,9 @@ package backends
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/url"
-	"os"
 	"testing"
 )
 
@@ -136,18 +136,11 @@ func TestSendGridBackendTemplating(t *testing.T) {
 }
 
 func TestSendGridBackendAttachments(t *testing.T) {
-	fileName := "test-file.txt"
-	mimeType := "text/plain"
-
-	file, err := os.Open("../README.md")
-	if err != nil {
-		t.FailNow()
-	}
-
 	b := NewSendGridBackend("", "")
 	e := testEmail()
 
-	e.AddAttachment(fileName, mimeType, file)
+	attachment := testAttachment(t)
+	e.Attachments = append(e.Attachments, attachment)
 
 	params, err := b.paramsForEmail(e)
 	if err != nil {
@@ -156,7 +149,7 @@ func TestSendGridBackendAttachments(t *testing.T) {
 
 	// the sendgrid backend will have read the contents of the reader,
 	// so we need to seek back to the beginning
-	offset, err := file.Seek(0, 0)
+	offset, err := attachment.Data.(io.ReadSeeker).Seek(0, 0)
 	if err != nil {
 		t.FailNow()
 	} else if offset != int64(0) {
@@ -164,11 +157,11 @@ func TestSendGridBackendAttachments(t *testing.T) {
 	}
 
 	// check that the file data is there
-	fileData, err := ioutil.ReadAll(file)
+	fileData, err := ioutil.ReadAll(attachment.Data)
 	if err != nil {
 		t.FailNow()
 	}
-	if params.Get(fmt.Sprintf("files[%v]", fileName)) != string(fileData) {
+	if params.Get(fmt.Sprintf("files[%v]", e.Attachments[0].Name)) != string(fileData) {
 		t.FailNow()
 	}
 }

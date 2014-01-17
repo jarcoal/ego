@@ -5,6 +5,8 @@ package backends
 import (
 	"github.com/jarcoal/ego"
 	"net/mail"
+	"os"
+	"testing"
 )
 
 func testAddresses() []*mail.Address {
@@ -34,4 +36,12 @@ func testEmail() *ego.Email {
 		TextBody: "Test Body",
 		Tags:     []string{"really", "important", "message"},
 	}
+}
+
+func testAttachment(t *testing.T) *ego.Attachment {
+	file, err := os.Open("../README.md")
+	if err != nil {
+		t.FailNow()
+	}
+	return &ego.Attachment{"test-file.txt", "text/plain", file}
 }
