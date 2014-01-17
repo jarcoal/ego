@@ -28,13 +28,13 @@ type mandrillBackend struct {
 
 func (m *mandrillBackend) DispatchEmail(e *ego.Email) error {
 	// convert the email to a mandrillEmail struct that will be json-serialized and sent out
-	me, err := m.mandrillEmailForEmail(e)
+	wrapper, err := m.mandrillWrapperForEmail(e)
 	if err != nil {
 		return fmt.Errorf("failed to build mandrill email: %s", err)
 	}
 
 	// wrap the mandrill email and encode it
-	body, err := json.Marshal(m.wrapMandrillEmail(e, me))
+	body, err := json.Marshal(wrapper)
 	if err != nil {
 		return fmt.Errorf("failed to encode mandrill payload: %s", err)
 	}
@@ -69,7 +69,7 @@ func (m *mandrillBackend) DispatchEmail(e *ego.Email) error {
 	return nil
 }
 
-func (m *mandrillBackend) mandrillEmailForEmail(e *ego.Email) (*mandrillEmail, error) {
+func (m *mandrillBackend) mandrillWrapperForEmail(e *ego.Email) (*mandrillWrapper, error) {
 	me := &mandrillEmail{
 		To:                 make([]*mandrillRecipient, 0, len(e.To)),
 		Attachments:        make([]*mandrillAttachment, 0, len(e.Attachments)),
@@ -109,40 +109,36 @@ func (m *mandrillBackend) mandrillEmailForEmail(e *ego.Email) (*mandrillEmail, e
 		})
 	}
 
-	return me, nil
-}
+	// prepare template context if any
+	ctx := make([]*mandrillTemplateContext, 0, len(e.TemplateContext))
 
-func (m *mandrillBackend) wrapMandrillEmail(e *ego.Email, me *mandrillEmail) map[string]interface{} {
-	wrapper := map[string]interface{}{
-		"key":     m.apiKey,
-		"message": me,
-	}
-
-	// if a service-side template has been specified
-	if e.TemplateId != "" {
-		wrapper["template_name"] = e.TemplateId
-		wrapper["template_context"] = mandrillCtxFromContext(e.TemplateContext)
-	}
-
-	// assign scheduled send date if provided
-	if !e.DeliveryTime.IsZero() {
-		wrapper["send_at"] = e.DeliveryTime.Format(MANDRILL_DELIVERY_TIME_FMT)
-	}
-
-	return wrapper
-}
-
-// mandrillCtxFromContext converts the context map into a slice of mandrillTemplateContext
-func mandrillCtxFromContext(context map[string]string) []*mandrillTemplateContext {
-	resp := make([]*mandrillTemplateContext, 0, len(context))
-
-	for k, v := range context {
-		resp = append(resp, &mandrillTemplateContext{
+	for k, v := range e.TemplateContext {
+		ctx = append(ctx, &mandrillTemplateContext{
 			Name:    k,
 			Content: v,
 		})
 	}
-	return resp
+
+	// wrap it up
+	wrapper := &mandrillWrapper{
+		Key:             m.apiKey,
+		Message:         me,
+		TemplateName:    e.TemplateId,
+		TemplateContext: ctx,
+		SendAt:          e.DeliveryTime.Format(MANDRILL_DELIVERY_TIME_FMT),
+	}
+
+	return wrapper, nil
+}
+
+// mandrillWrapper wraps the mandrillEmail and includes some extra metadata
+// such as the api key, delivery date and template information.
+type mandrillWrapper struct {
+	Key             string                     `json:"key"`
+	Message         *mandrillEmail             `json:"message"`
+	TemplateName    string                     `json:"template_name,omitempty"`
+	TemplateContext []*mandrillTemplateContext `json:"template_context,omitempty"`
+	SendAt          string                     `json:"send_at"`
 }
 
 // mandrillEmail is an email message that can be serialized and delivered to mandrill's web api

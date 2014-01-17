@@ -19,28 +19,24 @@ func TestBackendWrapper(t *testing.T) {
 	e.TemplateId = "test-template"
 	e.TemplateContext = map[string]string{"hello": "world"}
 
-	me, err := b.mandrillEmailForEmail(e)
+	wrapper, err := b.mandrillWrapperForEmail(e)
 	if err != nil {
 		t.FailNow()
 	}
 
-	wrapper := b.wrapMandrillEmail(e, me)
-
-	if wrapper["send_at"] != e.DeliveryTime.Format(MANDRILL_DELIVERY_TIME_FMT) {
+	if wrapper.SendAt != e.DeliveryTime.Format(MANDRILL_DELIVERY_TIME_FMT) {
 		t.FailNow()
 	}
 
-	if wrapper["template_name"] != e.TemplateId {
+	if wrapper.TemplateName != e.TemplateId {
 		t.FailNow()
 	}
 
-	ctx := wrapper["template_context"].([]*mandrillTemplateContext)
-
-	if ctx[0].Name != "hello" {
+	if wrapper.TemplateContext[0].Name != "hello" {
 		t.FailNow()
 	}
 
-	if ctx[0].Content != "world" {
+	if wrapper.TemplateContext[0].Content != "world" {
 		t.FailNow()
 	}
 }
@@ -48,10 +44,12 @@ func TestBackendWrapper(t *testing.T) {
 func TestBackendEmail(t *testing.T) {
 	e := testutils.TestEmail()
 
-	me, err := b.mandrillEmailForEmail(e)
+	wrapper, err := b.mandrillWrapperForEmail(e)
 	if err != nil {
 		t.FailNow()
 	}
+
+	me := wrapper.Message
 
 	if e.Subject != me.Subject {
 		t.FailNow()
@@ -104,10 +102,12 @@ func TestBackendAttachments(t *testing.T) {
 	attachment := testutils.TestAttachment(t)
 	e.Attachments = append(e.Attachments, attachment)
 
-	me, err := b.mandrillEmailForEmail(e)
+	wrapper, err := b.mandrillWrapperForEmail(e)
 	if err != nil {
 		t.FailNow()
 	}
+
+	me := wrapper.Message
 
 	if len(me.Attachments) != len(e.Attachments) {
 		t.FailNow()
