@@ -1,4 +1,4 @@
-# Ego
+# Ego [![Build Status](https://travis-ci.org/jarcoal/ego.png?branch=master)](https://travis-ci.org/jarcoal/ego)
 
 ##### Does two things
 
