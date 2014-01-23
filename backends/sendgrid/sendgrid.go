@@ -73,6 +73,22 @@ func (s *sendGridBackend) paramsForEmail(e *ego.Email) (url.Values, error) {
 		params.Add("bcc[]", bcc.Email.Address)
 	}
 
+	// add any headers
+	if len(e.Headers) > 0 {
+		headerMap := make(map[string]string)
+
+		for header, _ := range e.Headers {
+			headerMap[header] = e.Headers.Get(header)
+		}
+
+		headerMapEncoded, err := json.Marshal(headerMap)
+		if err != nil {
+			return nil, fmt.Errorf("failed to encode headers: %s", err)
+		}
+
+		params.Set("headers", string(headerMapEncoded))
+	}
+
 	// add any attachments
 	for _, attachment := range e.Attachments {
 		attachmentBytes, err := ioutil.ReadAll(attachment.Data)

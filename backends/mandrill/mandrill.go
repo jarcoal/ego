@@ -88,6 +88,12 @@ func (m *mandrillBackend) mandrillWrapperForEmail(e *ego.Email) (*mandrillWrappe
 		PreserveRecipients: e.VisibleRecipients,
 	}
 
+	if len(e.Headers) > 0 {
+		for header, _ := range e.Headers {
+			me.Headers[header] = e.Headers.Get(header)
+		}
+	}
+
 	if e.ReplyTo != nil {
 		me.Headers["Reply-To"] = e.ReplyTo.Address
 	}

@@ -3,6 +3,7 @@ package ego
 import (
 	"io"
 	"net/mail"
+	"net/url"
 	"time"
 )
 
@@ -15,6 +16,7 @@ func NewEmail() *Email {
 		TrackOpens:      true,
 		Attachments:     make([]*Attachment, 0),
 		TemplateContext: make(map[string]string),
+		Headers:         url.Values{},
 	}
 }
 
@@ -31,6 +33,9 @@ type Email struct {
 
 	// Files/data to be attached to the email
 	Attachments []*Attachment
+
+	// SMTP headers to include with message
+	Headers url.Values
 
 	// Many email services offer a tagging system for emails so
 	// they can be grouped for analytics.

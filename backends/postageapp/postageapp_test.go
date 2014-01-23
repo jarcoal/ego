@@ -49,6 +49,21 @@ func TestWrapper(t *testing.T) {
 	}
 }
 
+func TestHeaders(t *testing.T) {
+	e := testutils.TestEmail()
+
+	e.Headers.Set("hello", "world")
+
+	wrapper, err := b.wrapperForEmail(e)
+	if err != nil {
+		t.FailNow()
+	}
+
+	if wrapper.Arguments.Headers["hello"] != "world" {
+		t.FailNow()
+	}
+}
+
 func TestTemplating(t *testing.T) {
 	e := testutils.TestEmail()
 	e.TemplateId = "test-template"

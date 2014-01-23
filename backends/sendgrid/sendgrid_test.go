@@ -49,6 +49,28 @@ func TestGeneral(t *testing.T) {
 	}
 }
 
+func TestHeaders(t *testing.T) {
+	e := testutils.TestEmail()
+
+	e.Headers.Set("hello", "world")
+
+	params, err := b.paramsForEmail(e)
+	if err != nil {
+		t.FailNow()
+	}
+
+	headersEncoded := params.Get("headers")
+
+	headers := make(map[string]string)
+	if err := json.Unmarshal([]byte(headersEncoded), &headers); err != nil {
+		t.FailNow()
+	}
+
+	if headers["hello"] != "world" {
+		t.FailNow()
+	}
+}
+
 func TestCategories(t *testing.T) {
 	e := testutils.TestEmail()
 
