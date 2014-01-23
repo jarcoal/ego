@@ -79,6 +79,13 @@ func (p *postageAppBackend) wrapperForEmail(e *ego.Email) (*postageAppWrapper, e
 		pa.Headers["reply-to"] = e.ReplyTo.String()
 	}
 
+	// headers
+	if len(e.Headers) > 0 {
+		for header, _ := range e.Headers {
+			pa.Headers[header] = e.Headers.Get(header)
+		}
+	}
+
 	// attachments
 	if len(e.Attachments) > 0 {
 		pa.Attachments = make(map[string]*postageAppAttachment)

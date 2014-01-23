@@ -87,6 +87,21 @@ func TestEmail(t *testing.T) {
 	}
 }
 
+func TestHeaders(t *testing.T) {
+	e := testutils.TestEmail()
+
+	e.Headers.Set("hello", "world")
+
+	wrapper, err := b.mandrillWrapperForEmail(e)
+	if err != nil {
+		t.FailNow()
+	}
+
+	if wrapper.Message.Headers["hello"] != "world" {
+		t.FailNow()
+	}
+}
+
 func TestTemplating(t *testing.T) {
 	// TestEmail adds recipients that have a piece of recipient-specific context
 	e := testutils.TestEmail()
