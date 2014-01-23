@@ -11,13 +11,12 @@ import (
 
 var b = mandrillBackend{"abc123"}
 
-func TestBackendWrapper(t *testing.T) {
+func TestWrapper(t *testing.T) {
 	e := testutils.TestEmail()
 
 	// set some additional properties
 	e.DeliveryTime = time.Now()
 	e.TemplateId = "test-template"
-	e.TemplateContext = map[string]string{"hello": "world"}
 
 	wrapper, err := b.mandrillWrapperForEmail(e)
 	if err != nil {
@@ -31,17 +30,9 @@ func TestBackendWrapper(t *testing.T) {
 	if wrapper.TemplateName != e.TemplateId {
 		t.FailNow()
 	}
-
-	if wrapper.TemplateContext[0].Name != "hello" {
-		t.FailNow()
-	}
-
-	if wrapper.TemplateContext[0].Content != "world" {
-		t.FailNow()
-	}
 }
 
-func TestBackendEmail(t *testing.T) {
+func TestEmail(t *testing.T) {
 	e := testutils.TestEmail()
 
 	wrapper, err := b.mandrillWrapperForEmail(e)
@@ -96,7 +87,38 @@ func TestBackendEmail(t *testing.T) {
 	}
 }
 
-func TestBackendAttachments(t *testing.T) {
+func TestTemplating(t *testing.T) {
+	// TestEmail adds recipients that have a piece of recipient-specific context
+	e := testutils.TestEmail()
+
+	// set some global template context
+	e.TemplateContext["hello"] = "world"
+
+	wrapper, err := b.mandrillWrapperForEmail(e)
+	if err != nil {
+		t.FailNow()
+	}
+
+	me := wrapper.Message
+
+	if len(me.GlobalMergeVars) != 1 {
+		t.FailNow()
+	}
+
+	if me.GlobalMergeVars[0].Name != "hello" {
+		t.FailNow()
+	}
+
+	if me.GlobalMergeVars[0].Content != "world" {
+		t.FailNow()
+	}
+
+	if len(me.MergeVars) != len(me.To) {
+		t.FailNow()
+	}
+}
+
+func TestAttachments(t *testing.T) {
 	e := testutils.TestEmail()
 
 	attachment := testutils.TestAttachment(t)

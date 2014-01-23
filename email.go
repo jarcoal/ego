@@ -8,8 +8,9 @@ import (
 
 func NewEmail() *Email {
 	return &Email{
-		To:              make([]*mail.Address, 0),
-		Bcc:             make([]*mail.Address, 0),
+		To:              make([]*Recipient, 0),
+		Cc:              make([]*Recipient, 0),
+		Bcc:             make([]*Recipient, 0),
 		TrackClicks:     true,
 		TrackOpens:      true,
 		Attachments:     make([]*Attachment, 0),
@@ -19,7 +20,7 @@ func NewEmail() *Email {
 
 type Email struct {
 	// Basic Email Sender/Receiver Information
-	To, Bcc       []*mail.Address
+	To, Cc, Bcc   []*Recipient
 	From, ReplyTo *mail.Address
 
 	// Email Subject
@@ -61,10 +62,13 @@ func (e *Email) AddAttachment(name, mimetype string, data io.Reader) {
 }
 
 // AddRecipient is a convenience method for adding recipients to the message
-func (e *Email) AddRecipient(name, email string) {
-	e.To = append(e.To, &mail.Address{
-		Name:    name,
-		Address: email,
+func (e *Email) AddRecipient(name, email string, tmplCtx map[string]string) {
+	e.To = append(e.To, &Recipient{
+		Email: &mail.Address{
+			Name:    name,
+			Address: email,
+		},
+		TemplateContext: tmplCtx,
 	})
 }
 
@@ -72,4 +76,10 @@ func (e *Email) AddRecipient(name, email string) {
 type Attachment struct {
 	Name, Mimetype string
 	Data           io.Reader
+}
+
+// Recipient represents a single recipient in an email.
+type Recipient struct {
+	Email           *mail.Address
+	TemplateContext map[string]string
 }

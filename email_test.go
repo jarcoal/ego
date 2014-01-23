@@ -21,13 +21,29 @@ func TestEmailAddAttachment(t *testing.T) {
 func TestEmailAddRecipient(t *testing.T) {
 	e := NewEmail()
 
+	testName := "test recipient"
+	testAddress := "test@test.com"
+	testCtx := map[string]string{"hello": "world"}
+
 	if len(e.To) != 0 {
 		t.FailNow()
 	}
 
-	e.AddRecipient("test recipient", "test@test.com")
+	e.AddRecipient(testName, testAddress, testCtx)
 
 	if len(e.To) != 1 {
+		t.FailNow()
+	}
+
+	if e.To[0].Email.Address != testAddress {
+		t.FailNow()
+	}
+
+	if e.To[0].Email.Name != testName {
+		t.FailNow()
+	}
+
+	if e.To[0].TemplateContext["hello"] != "world" {
 		t.FailNow()
 	}
 }

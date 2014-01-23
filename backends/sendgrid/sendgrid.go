@@ -65,12 +65,12 @@ func (s *sendGridBackend) paramsForEmail(e *ego.Email) (url.Values, error) {
 	}
 
 	for _, to := range e.To {
-		params.Add("to[]", to.Address)
-		params.Add("toname[]", to.Name)
+		params.Add("to[]", to.Email.Address)
+		params.Add("toname[]", to.Email.Name)
 	}
 
 	for _, bcc := range e.Bcc {
-		params.Add("bcc[]", bcc.Address)
+		params.Add("bcc[]", bcc.Email.Address)
 	}
 
 	// add any attachments

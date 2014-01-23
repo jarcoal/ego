@@ -58,7 +58,7 @@ func (p *postageAppBackend) DispatchEmail(e *ego.Email) error {
 
 func (p *postageAppBackend) wrapperForEmail(e *ego.Email) (*postageAppWrapper, error) {
 	pa := &postageAppArguments{
-		Recipients: make([]string, 0),
+		Recipients: make(map[string]map[string]string),
 		Headers: map[string]string{
 			"subject": e.Subject,
 			"from":    e.From.String(),
@@ -70,8 +70,8 @@ func (p *postageAppBackend) wrapperForEmail(e *ego.Email) (*postageAppWrapper, e
 	}
 
 	// recipients
-	for _, recip := range e.To {
-		pa.Recipients = append(pa.Recipients, recip.String())
+	for _, to := range e.To {
+		pa.Recipients[to.Email.String()] = to.TemplateContext
 	}
 
 	// reply to
@@ -118,7 +118,7 @@ type postageAppWrapper struct {
 }
 
 type postageAppArguments struct {
-	Recipients        []string                         `json:"recipients"`
+	Recipients        map[string]map[string]string     `json:"recipients"`
 	Headers           map[string]string                `json:"headers"`
 	Content           map[string]string                `json:"content"`
 	Attachments       map[string]*postageAppAttachment `json:"attachments"`

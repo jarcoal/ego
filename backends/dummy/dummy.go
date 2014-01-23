@@ -29,7 +29,7 @@ func (d *dummyBackend) DispatchEmail(e *ego.Email) error {
 	recipients := []string{}
 
 	for _, recip := range e.To {
-		recipients = append(recipients, recip.String())
+		recipients = append(recipients, recip.Email.String())
 	}
 
 	d.log("To: %s", strings.Join(recipients, ", "))

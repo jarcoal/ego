@@ -12,11 +12,8 @@ const POSTAGEAPP_API_KEY = "abc123"
 
 var b = postageAppBackend{POSTAGEAPP_API_KEY}
 
-func TestBackendWrapper(t *testing.T) {
+func TestWrapper(t *testing.T) {
 	e := testutils.TestEmail()
-
-	e.TemplateId = "test-template"
-	e.TemplateContext = map[string]string{"hello": "world"}
 
 	wrapper, err := b.wrapperForEmail(e)
 	if err != nil {
@@ -50,6 +47,17 @@ func TestBackendWrapper(t *testing.T) {
 	if wrapper.Arguments.Content["text/html"] != e.HtmlBody {
 		t.FailNow()
 	}
+}
+
+func TestTemplating(t *testing.T) {
+	e := testutils.TestEmail()
+	e.TemplateId = "test-template"
+	e.TemplateContext = map[string]string{"hello": "world"}
+
+	wrapper, err := b.wrapperForEmail(e)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	if wrapper.Arguments.Template != e.TemplateId {
 		t.FailNow()
@@ -58,9 +66,15 @@ func TestBackendWrapper(t *testing.T) {
 	if wrapper.Arguments.Variables["hello"] != e.TemplateContext["hello"] {
 		t.FailNow()
 	}
+
+	for _, ctx := range wrapper.Arguments.Recipients {
+		if _, ok := ctx["name"]; !ok {
+			t.FailNow()
+		}
+	}
 }
 
-func TestBackendAttachments(t *testing.T) {
+func TestAttachments(t *testing.T) {
 	e := testutils.TestEmail()
 
 	attachment := testutils.TestAttachment(t)

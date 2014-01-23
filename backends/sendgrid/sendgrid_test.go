@@ -12,7 +12,7 @@ import (
 
 var b = sendGridBackend{"test-username", "test-password"}
 
-func TestSendGridBackendGeneral(t *testing.T) {
+func TestGeneral(t *testing.T) {
 	e := testutils.TestEmail()
 
 	params, err := b.paramsForEmail(e)
@@ -49,7 +49,7 @@ func TestSendGridBackendGeneral(t *testing.T) {
 	}
 }
 
-func TestSendGridBackendCategories(t *testing.T) {
+func TestCategories(t *testing.T) {
 	e := testutils.TestEmail()
 
 	params, err := b.paramsForEmail(e)
@@ -63,7 +63,7 @@ func TestSendGridBackendCategories(t *testing.T) {
 	}
 }
 
-func TestSendGridBackendTemplating(t *testing.T) {
+func TestTemplating(t *testing.T) {
 	e := testutils.TestEmail()
 	e.TemplateContext = make(map[string]string)
 
@@ -121,7 +121,7 @@ func TestSendGridBackendTemplating(t *testing.T) {
 	}()
 }
 
-func TestSendGridBackendAttachments(t *testing.T) {
+func TestAttachments(t *testing.T) {
 	e := testutils.TestEmail()
 
 	attachment := testutils.TestAttachment(t)

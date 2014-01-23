@@ -73,6 +73,8 @@ func (m *mandrillBackend) mandrillWrapperForEmail(e *ego.Email) (*mandrillWrappe
 	me := &mandrillEmail{
 		To:                 make([]*mandrillRecipient, 0, len(e.To)),
 		Attachments:        make([]*mandrillAttachment, 0, len(e.Attachments)),
+		GlobalMergeVars:    make([]*mandrillTemplateContext, 0),
+		MergeVars:          make([]*mandrillRecipientContext, 0),
 		Headers:            make(map[string]string),
 		Html:               e.HtmlBody,
 		Text:               e.TextBody,
@@ -92,7 +94,17 @@ func (m *mandrillBackend) mandrillWrapperForEmail(e *ego.Email) (*mandrillWrappe
 
 	// assign the recipients
 	for _, to := range e.To {
-		me.To = append(me.To, &mandrillRecipient{"to", to.Name, to.Address})
+		me.To = append(me.To, &mandrillRecipient{"to", to.Email.Name,
+			to.Email.Address})
+
+		// if there is template context associate with the recipient,
+		// append it to the merge var slice.
+		if to.TemplateContext != nil {
+			me.MergeVars = append(me.MergeVars, &mandrillRecipientContext{
+				Recipient: to.Email.Address,
+				Vars:      emailCtxToMandrillCtx(to.TemplateContext),
+			})
+		}
 	}
 
 	// add attachments
@@ -109,53 +121,65 @@ func (m *mandrillBackend) mandrillWrapperForEmail(e *ego.Email) (*mandrillWrappe
 		})
 	}
 
-	// prepare template context if any
-	ctx := make([]*mandrillTemplateContext, 0, len(e.TemplateContext))
-
-	for k, v := range e.TemplateContext {
-		ctx = append(ctx, &mandrillTemplateContext{
-			Name:    k,
-			Content: v,
-		})
-	}
+	// assign template context, if any
+	me.GlobalMergeVars = emailCtxToMandrillCtx(e.TemplateContext)
 
 	// wrap it up
 	wrapper := &mandrillWrapper{
-		Key:             m.apiKey,
-		Message:         me,
-		TemplateName:    e.TemplateId,
-		TemplateContext: ctx,
-		SendAt:          e.DeliveryTime.Format(MANDRILL_DELIVERY_TIME_FMT),
+		Key:          m.apiKey,
+		Message:      me,
+		TemplateName: e.TemplateId,
+		SendAt:       e.DeliveryTime.Format(MANDRILL_DELIVERY_TIME_FMT),
 	}
 
 	return wrapper, nil
 }
 
+// emailCtxToMandrillCtx converts the context map into a slice of mandrillTemplateContext
+func emailCtxToMandrillCtx(context map[string]string) []*mandrillTemplateContext {
+	resp := make([]*mandrillTemplateContext, 0, len(context))
+
+	for k, v := range context {
+		resp = append(resp, &mandrillTemplateContext{
+			Name:    k,
+			Content: v,
+		})
+	}
+	return resp
+}
+
 // mandrillWrapper wraps the mandrillEmail and includes some extra metadata
 // such as the api key, delivery date and template information.
 type mandrillWrapper struct {
-	Key             string                     `json:"key"`
-	Message         *mandrillEmail             `json:"message"`
-	TemplateName    string                     `json:"template_name,omitempty"`
-	TemplateContext []*mandrillTemplateContext `json:"template_context,omitempty"`
-	SendAt          string                     `json:"send_at"`
+	Key          string         `json:"key"`
+	Message      *mandrillEmail `json:"message"`
+	TemplateName string         `json:"template_name,omitempty"`
+	SendAt       string         `json:"send_at"`
 }
 
 // mandrillEmail is an email message that can be serialized and delivered to mandrill's web api
 type mandrillEmail struct {
-	To                 []*mandrillRecipient  `json:"to"`
-	Attachments        []*mandrillAttachment `json:"attachments,omitempty"`
-	Html               string                `json:"html,omitempty"`
-	Text               string                `json:"text,omitempty"`
-	Subject            string                `json:"subject"`
-	FromEmail          string                `json:"from_email"`
-	FromName           string                `json:"from_name"`
-	TrackOpens         bool                  `json:"track_opens"`
-	TrackClicks        bool                  `json:"track_clicks"`
-	Tags               []string              `json:"tags,omitempty"`
-	Subaccount         string                `json:"subaccount,omitempty"`
-	PreserveRecipients bool                  `json:"preserve_recipients"`
-	Headers            map[string]string     `json:"headers,omitempty"`
+	To                 []*mandrillRecipient        `json:"to"`
+	Attachments        []*mandrillAttachment       `json:"attachments,omitempty"`
+	Html               string                      `json:"html,omitempty"`
+	Text               string                      `json:"text,omitempty"`
+	Subject            string                      `json:"subject"`
+	FromEmail          string                      `json:"from_email"`
+	FromName           string                      `json:"from_name"`
+	TrackOpens         bool                        `json:"track_opens"`
+	TrackClicks        bool                        `json:"track_clicks"`
+	Tags               []string                    `json:"tags,omitempty"`
+	Subaccount         string                      `json:"subaccount,omitempty"`
+	PreserveRecipients bool                        `json:"preserve_recipients"`
+	Headers            map[string]string           `json:"headers,omitempty"`
+	GlobalMergeVars    []*mandrillTemplateContext  `json:"global_merge_vars,omitempty"`
+	MergeVars          []*mandrillRecipientContext `json:"merge_vars,omitempty"`
+}
+
+// mandrillRecipientContext represents a recipient's specific template context
+type mandrillRecipientContext struct {
+	Recipient string                     `json:"rcpt"`
+	Vars      []*mandrillTemplateContext `json:"vars"`
 }
 
 // mandrillTemplateContext represents a single key/value pair to be used in
