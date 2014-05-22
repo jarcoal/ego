@@ -1,5 +1,8 @@
-// Mandrill
+// Mandrill transactional email backend
+//
+// Website: http://mandrill.com/
 // API Docs: https://mandrillapp.com/api/docs/messages.JSON.html
+
 package mandrill
 
 import (
@@ -13,11 +16,12 @@ import (
 	"net/http"
 )
 
-const MANDRILL_DELIVERY_TIME_FMT = "2006-01-02T15:04:05"
-const MANDRILL_API_URL = "https://mandrillapp.com/api/1.0/messages/%s.json"
+const deliveryTimeFmt = "2006-01-02T15:04:05"
+const apiURLFmt = "https://mandrillapp.com/api/1.0/messages/%s.json"
 
 var _ backends.Backend = (*mandrillBackend)(nil)
 
+// NewBackend returns a Mandrill backend bound to the API key
 func NewBackend(apiKey string) backends.Backend {
 	return &mandrillBackend{apiKey}
 }
@@ -40,15 +44,15 @@ func (m *mandrillBackend) DispatchEmail(e *ego.Email) error {
 	}
 
 	// mandrill uses different endpoints if you're sending a templated email
-	var apiUrl string
-	if e.TemplateId != "" {
-		apiUrl = fmt.Sprintf(MANDRILL_API_URL, "send-template")
+	var apiURL string
+	if e.TemplateID != "" {
+		apiURL = fmt.Sprintf(apiURLFmt, "send-template")
 	} else {
-		apiUrl = fmt.Sprintf(MANDRILL_API_URL, "send")
+		apiURL = fmt.Sprintf(apiURLFmt, "send")
 	}
 
 	// make the request to mandrill's api
-	resp, err := http.Post(apiUrl, "application/json", bytes.NewReader(body))
+	resp, err := http.Post(apiURL, "application/json", bytes.NewReader(body))
 	if err != nil {
 		return fmt.Errorf("failed to post to mandrill: %s", err)
 	}
@@ -60,7 +64,7 @@ func (m *mandrillBackend) DispatchEmail(e *ego.Email) error {
 
 		if err := json.NewDecoder(resp.Body).Decode(mandrillErr); err != nil {
 			return fmt.Errorf("received %s from mandrill and couldn't decode error payload: %s",
-				resp.StatusCode, err)
+				resp.Status, err)
 		}
 
 		return mandrillErr
@@ -76,7 +80,7 @@ func (m *mandrillBackend) mandrillWrapperForEmail(e *ego.Email) (*mandrillWrappe
 		GlobalMergeVars:    make([]*mandrillTemplateContext, 0),
 		MergeVars:          make([]*mandrillRecipientContext, 0),
 		Headers:            make(map[string]string),
-		Html:               e.HtmlBody,
+		HTML:               e.HTMLBody,
 		Text:               e.TextBody,
 		Subject:            e.Subject,
 		FromEmail:          e.From.Address,
@@ -89,7 +93,7 @@ func (m *mandrillBackend) mandrillWrapperForEmail(e *ego.Email) (*mandrillWrappe
 	}
 
 	if len(e.Headers) > 0 {
-		for header, _ := range e.Headers {
+		for header := range e.Headers {
 			me.Headers[header] = e.Headers.Get(header)
 		}
 	}
@@ -134,8 +138,8 @@ func (m *mandrillBackend) mandrillWrapperForEmail(e *ego.Email) (*mandrillWrappe
 	wrapper := &mandrillWrapper{
 		Key:          m.apiKey,
 		Message:      me,
-		TemplateName: e.TemplateId,
-		SendAt:       e.DeliveryTime.Format(MANDRILL_DELIVERY_TIME_FMT),
+		TemplateName: e.TemplateID,
+		SendAt:       e.DeliveryTime.Format(deliveryTimeFmt),
 	}
 
 	return wrapper, nil
@@ -167,7 +171,7 @@ type mandrillWrapper struct {
 type mandrillEmail struct {
 	To                 []*mandrillRecipient        `json:"to"`
 	Attachments        []*mandrillAttachment       `json:"attachments,omitempty"`
-	Html               string                      `json:"html,omitempty"`
+	HTML               string                      `json:"html,omitempty"`
 	Text               string                      `json:"text,omitempty"`
 	Subject            string                      `json:"subject"`
 	FromEmail          string                      `json:"from_email"`
@@ -211,10 +215,10 @@ type mandrillAttachment struct {
 
 // mandrillError represents a json-encoded error returned by mandrill from an api call
 type mandrillError struct {
-	Status  string `json:status`
-	Code    int    `json:code`
-	Name    string `json:name`
-	Message string `json:message`
+	Status  string `json:"status"`
+	Code    int    `json:"code"`
+	Name    string `json:"name"`
+	Message string `json:"message"`
 }
 
 func (m *mandrillError) Error() string {

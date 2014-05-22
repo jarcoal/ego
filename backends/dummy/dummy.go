@@ -1,5 +1,7 @@
 // Dummy Backend
+//
 // Doesn't do anything except optionally log out the emails it receives.
+
 package dummy
 
 import (
@@ -13,6 +15,7 @@ var _ backends.Backend = (*dummyBackend)(nil)
 // to have the dummyBackend log given emails, it needs to be instantiated with this function type
 type logger func(format string, vars ...interface{})
 
+// NewBackend returns a backend bound to the given logger
 func NewBackend(l logger) backends.Backend {
 	return &dummyBackend{l}
 }
@@ -43,8 +46,8 @@ func (d *dummyBackend) DispatchEmail(e *ego.Email) error {
 		d.log("Tags: %s", strings.Join(e.Tags, ", "))
 	}
 
-	if e.TemplateId != "" {
-		d.log("TemplateId: %s", e.TemplateId)
+	if e.TemplateID != "" {
+		d.log("TemplateID: %s", e.TemplateID)
 		d.log("TemplateContext: %s", e.TemplateContext)
 	}
 
@@ -67,7 +70,7 @@ func (d *dummyBackend) DispatchEmail(e *ego.Email) error {
 	}
 
 	d.log("TextBody: %s", e.TextBody)
-	d.log("HtmlBody: %s", e.HtmlBody)
+	d.log("HTMLBody: %s", e.HTMLBody)
 
 	return nil
 }

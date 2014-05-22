@@ -8,10 +8,11 @@ import (
 	"testing"
 )
 
-const POSTAGEAPP_API_KEY = "abc123"
+const apiKey = "abc123"
 
-var b = postageAppBackend{POSTAGEAPP_API_KEY}
+var b = postageAppBackend{apiKey}
 
+// TestWrapper checks the JSON wrapper
 func TestWrapper(t *testing.T) {
 	e := testutils.TestEmail()
 
@@ -20,7 +21,7 @@ func TestWrapper(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if wrapper.ApiKey != POSTAGEAPP_API_KEY {
+	if wrapper.APIKey != apiKey {
 		t.FailNow()
 	}
 
@@ -44,11 +45,12 @@ func TestWrapper(t *testing.T) {
 		t.FailNow()
 	}
 
-	if wrapper.Arguments.Content["text/html"] != e.HtmlBody {
+	if wrapper.Arguments.Content["text/html"] != e.HTMLBody {
 		t.FailNow()
 	}
 }
 
+// TestHeaders checks that headers are set correctly
 func TestHeaders(t *testing.T) {
 	e := testutils.TestEmail()
 
@@ -64,9 +66,10 @@ func TestHeaders(t *testing.T) {
 	}
 }
 
+// TestTemplating checks that template name/vars are set correctly
 func TestTemplating(t *testing.T) {
 	e := testutils.TestEmail()
-	e.TemplateId = "test-template"
+	e.TemplateID = "test-template"
 	e.TemplateContext = map[string]string{"hello": "world"}
 
 	wrapper, err := b.wrapperForEmail(e)
@@ -74,7 +77,7 @@ func TestTemplating(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if wrapper.Arguments.Template != e.TemplateId {
+	if wrapper.Arguments.Template != e.TemplateID {
 		t.FailNow()
 	}
 
@@ -89,6 +92,7 @@ func TestTemplating(t *testing.T) {
 	}
 }
 
+// TestAttachments checks that attachments are added correctly
 func TestAttachments(t *testing.T) {
 	e := testutils.TestEmail()
 

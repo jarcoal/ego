@@ -4,6 +4,7 @@ import (
 	"testing"
 )
 
+// TestEmailAddAttachment checks that the AddAttachment method of Email is working.
 func TestEmailAddAttachment(t *testing.T) {
 	e := NewEmail()
 
@@ -18,6 +19,7 @@ func TestEmailAddAttachment(t *testing.T) {
 	}
 }
 
+// TestEmailAddRecipient checks that the AddRecipient method of Email is working.
 func TestEmailAddRecipient(t *testing.T) {
 	e := NewEmail()
 

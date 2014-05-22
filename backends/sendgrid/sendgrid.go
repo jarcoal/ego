@@ -1,5 +1,8 @@
-// SendGrid
+// SendGrid transactional email backend
+//
+// Website: http://sendgrid.com/
 // API Docs: http://sendgrid.com/docs/API_Reference/Web_API/mail.html
+
 package sendgrid
 
 import (
@@ -13,10 +16,11 @@ import (
 	"net/url"
 )
 
-const SENDGRID_API_URL = "https://sendgrid.com/api/mail.send.json"
+const apiURL = "https://sendgrid.com/api/mail.send.json"
 
 var _ backends.Backend = (*sendGridBackend)(nil)
 
+// NewBackend creates a new SendGrid backend that is bound to the given credentials.
 func NewBackend(username, password string) backends.Backend {
 	return &sendGridBackend{username, password}
 }
@@ -33,7 +37,7 @@ func (s *sendGridBackend) DispatchEmail(e *ego.Email) error {
 	}
 
 	// perform the request
-	resp, err := http.PostForm(SENDGRID_API_URL, params)
+	resp, err := http.PostForm(apiURL, params)
 	if err != nil {
 		return err
 	}
@@ -56,7 +60,7 @@ func (s *sendGridBackend) paramsForEmail(e *ego.Email) (url.Values, error) {
 	// general information
 	params.Set("subject", e.Subject)
 	params.Set("text", e.TextBody)
-	params.Set("html", e.HtmlBody)
+	params.Set("html", e.HTMLBody)
 	params.Set("from", e.From.Address)
 	params.Set("fromname", e.From.Name)
 
@@ -77,7 +81,7 @@ func (s *sendGridBackend) paramsForEmail(e *ego.Email) (url.Values, error) {
 	if len(e.Headers) > 0 {
 		headerMap := make(map[string]string)
 
-		for header, _ := range e.Headers {
+		for header := range e.Headers {
 			headerMap[header] = e.Headers.Get(header)
 		}
 
@@ -99,15 +103,15 @@ func (s *sendGridBackend) paramsForEmail(e *ego.Email) (url.Values, error) {
 	}
 
 	// these are misc parameters that get fed into the smtp api
-	xSmtpApiParams := make(map[string]interface{})
+	xSMTPApiParams := make(map[string]interface{})
 
 	// apply the tags (which sendgrid calls categories)
 	if len(e.Tags) > 0 {
-		xSmtpApiParams["category"] = e.Tags
+		xSMTPApiParams["category"] = e.Tags
 	}
 
 	// template filter properties
-	if e.TemplateId != "" {
+	if e.TemplateID != "" {
 		// there should be only one template context variable named 'body'
 		if len(e.TemplateContext) != 1 {
 			return nil, errors.New("template context for SendGrid can only contain one variable 'body'")
@@ -120,22 +124,22 @@ func (s *sendGridBackend) paramsForEmail(e *ego.Email) (url.Values, error) {
 		params.Set("body", bodyCtx)
 
 		// apply the template id
-		xSmtpApiParams["filters"] = map[string]interface{}{
+		xSMTPApiParams["filters"] = map[string]interface{}{
 			"templates": map[string]interface{}{
 				"settings": map[string]interface{}{
 					"enabled":     1,
-					"template_id": e.TemplateId,
+					"template_id": e.TemplateID,
 				},
 			},
 		}
 	}
 
 	// x-smtp params are to be json encoded before adding to the params
-	xSmtpApiEncoded, err := json.Marshal(xSmtpApiParams)
+	xSMTPAPIEncoded, err := json.Marshal(xSMTPApiParams)
 	if err != nil {
 		return nil, errors.New("failed to encode x-smtpapi parameters")
 	}
-	params.Set("x-smtpapi", string(xSmtpApiEncoded))
+	params.Set("x-smtpapi", string(xSMTPAPIEncoded))
 
 	return params, nil
 }

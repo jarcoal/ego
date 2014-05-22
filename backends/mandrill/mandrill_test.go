@@ -11,27 +11,29 @@ import (
 
 var b = mandrillBackend{"abc123"}
 
+// TestWrapper checks the JSON wrapper we send to Mandrill
 func TestWrapper(t *testing.T) {
 	e := testutils.TestEmail()
 
 	// set some additional properties
 	e.DeliveryTime = time.Now()
-	e.TemplateId = "test-template"
+	e.TemplateID = "test-template"
 
 	wrapper, err := b.mandrillWrapperForEmail(e)
 	if err != nil {
 		t.FailNow()
 	}
 
-	if wrapper.SendAt != e.DeliveryTime.Format(MANDRILL_DELIVERY_TIME_FMT) {
+	if wrapper.SendAt != e.DeliveryTime.Format(deliveryTimeFmt) {
 		t.FailNow()
 	}
 
-	if wrapper.TemplateName != e.TemplateId {
+	if wrapper.TemplateName != e.TemplateID {
 		t.FailNow()
 	}
 }
 
+// TestEmail checks that email properties are set correctly
 func TestEmail(t *testing.T) {
 	e := testutils.TestEmail()
 
@@ -46,7 +48,7 @@ func TestEmail(t *testing.T) {
 		t.FailNow()
 	}
 
-	if e.HtmlBody != me.Html {
+	if e.HTMLBody != me.HTML {
 		t.FailNow()
 	}
 
@@ -87,6 +89,7 @@ func TestEmail(t *testing.T) {
 	}
 }
 
+// TestHeaders checks that the email headers are set correctly
 func TestHeaders(t *testing.T) {
 	e := testutils.TestEmail()
 
@@ -102,6 +105,7 @@ func TestHeaders(t *testing.T) {
 	}
 }
 
+// TestTemplating checks that the template name and vars are set correctly
 func TestTemplating(t *testing.T) {
 	// TestEmail adds recipients that have a piece of recipient-specific context
 	e := testutils.TestEmail()
@@ -133,6 +137,7 @@ func TestTemplating(t *testing.T) {
 	}
 }
 
+// TestAttachments checks that the attachments are added correctly
 func TestAttachments(t *testing.T) {
 	e := testutils.TestEmail()
 

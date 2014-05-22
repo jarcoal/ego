@@ -6,6 +6,7 @@ import (
 	"testing"
 )
 
+// TestDummyLogging checks the logging functionality
 func TestDummyLogging(t *testing.T) {
 	logs := make([]string, 0)
 

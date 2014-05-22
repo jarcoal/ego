@@ -1,5 +1,8 @@
 // PostageApp
+//
+// Website: http://postageapp.com/
 // API Docs: http://help.postageapp.com/kb/api/send_message
+
 package postageapp
 
 import (
@@ -13,10 +16,11 @@ import (
 	"net/http"
 )
 
-const POSTAGEAPP_API_URL = "https://api.postageapp.com/v.1.0/send_message.json"
+const apiURL = "https://api.postageapp.com/v.1.0/send_message.json"
 
 var _ backends.Backend = (*postageAppBackend)(nil)
 
+// NewBackend returns a Postageapp backend bound to the API key
 func NewBackend(apiKey string) backends.Backend {
 	return &postageAppBackend{apiKey}
 }
@@ -36,7 +40,7 @@ func (p *postageAppBackend) DispatchEmail(e *ego.Email) error {
 		return fmt.Errorf("failed to encode postageapp payload: %s", err)
 	}
 
-	resp, err := http.Post(POSTAGEAPP_API_URL, "application/json", bytes.NewReader(body))
+	resp, err := http.Post(apiURL, "application/json", bytes.NewReader(body))
 	if err != nil {
 		return fmt.Errorf("failed to post to postageapp: %s", err)
 	}
@@ -47,7 +51,7 @@ func (p *postageAppBackend) DispatchEmail(e *ego.Email) error {
 
 		if err := json.NewDecoder(resp.Body).Decode(postageAppErr); err != nil {
 			return fmt.Errorf("received %s from postageapp and couldn't decode error payload: %s",
-				resp.StatusCode, err)
+				resp.Status, err)
 		}
 
 		return postageAppErr
@@ -65,7 +69,7 @@ func (p *postageAppBackend) wrapperForEmail(e *ego.Email) (*postageAppWrapper, e
 		},
 		Content: map[string]string{
 			"text/plain": e.TextBody,
-			"text/html":  e.HtmlBody,
+			"text/html":  e.HTMLBody,
 		},
 	}
 
@@ -81,7 +85,7 @@ func (p *postageAppBackend) wrapperForEmail(e *ego.Email) (*postageAppWrapper, e
 
 	// headers
 	if len(e.Headers) > 0 {
-		for header, _ := range e.Headers {
+		for header := range e.Headers {
 			pa.Headers[header] = e.Headers.Get(header)
 		}
 	}
@@ -104,14 +108,14 @@ func (p *postageAppBackend) wrapperForEmail(e *ego.Email) (*postageAppWrapper, e
 	}
 
 	// templating
-	if e.TemplateId != "" {
-		pa.Template = e.TemplateId
+	if e.TemplateID != "" {
+		pa.Template = e.TemplateID
 		pa.Variables = e.TemplateContext
 	}
 
 	// put it in the wrapper
 	wrapper := &postageAppWrapper{
-		ApiKey:    p.apiKey,
+		APIKey:    p.apiKey,
 		Arguments: pa,
 	}
 
@@ -119,8 +123,8 @@ func (p *postageAppBackend) wrapperForEmail(e *ego.Email) (*postageAppWrapper, e
 }
 
 type postageAppWrapper struct {
-	ApiKey    string               `json:"api_key"`
-	Uid       string               `json:"uid,omitempty"`
+	APIKey    string               `json:"api_key"`
+	UID       string               `json:"uid,omitempty"`
 	Arguments *postageAppArguments `json:"arguments"`
 }
 
@@ -141,11 +145,11 @@ type postageAppAttachment struct {
 
 // postageAppError is a representation of an error response from PostageApp's API
 type postageAppError struct {
-	Uid     string `json:"uid"`
+	UID     string `json:"uid"`
 	Status  string `json:"status"`
 	Message string `json:"message"`
 }
 
 func (p *postageAppError) Error() string {
-	return fmt.Sprintf("%v %v - %v", p.Uid, p.Status, p.Message)
+	return fmt.Sprintf("%v %v - %v", p.UID, p.Status, p.Message)
 }

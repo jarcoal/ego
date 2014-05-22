@@ -12,6 +12,7 @@ import (
 
 var b = sendGridBackend{"test-username", "test-password"}
 
+// TestGeneral tests that the basic email params like subject and body are populated correctly.
 func TestGeneral(t *testing.T) {
 	e := testutils.TestEmail()
 
@@ -28,7 +29,7 @@ func TestGeneral(t *testing.T) {
 		t.FailNow()
 	}
 
-	if params.Get("html") != e.HtmlBody {
+	if params.Get("html") != e.HTMLBody {
 		t.FailNow()
 	}
 
@@ -49,6 +50,7 @@ func TestGeneral(t *testing.T) {
 	}
 }
 
+// TestHeaders checks that email headers are set correctly
 func TestHeaders(t *testing.T) {
 	e := testutils.TestEmail()
 
@@ -71,6 +73,7 @@ func TestHeaders(t *testing.T) {
 	}
 }
 
+// TestCategories checks that the tags/categories are set correctly
 func TestCategories(t *testing.T) {
 	e := testutils.TestEmail()
 
@@ -79,12 +82,13 @@ func TestCategories(t *testing.T) {
 		t.FailNow()
 	}
 
-	xSmtpApi := decodeXsmtpApi(t, params)
-	if len(xSmtpApi["category"].([]interface{})) != len(e.Tags) {
+	xSMTPAPI := decodeXSMTPAPI(t, params)
+	if len(xSMTPAPI["category"].([]interface{})) != len(e.Tags) {
 		t.FailNow()
 	}
 }
 
+// TestTemplating tests SendGrid's (yet to be released) template tags
 func TestTemplating(t *testing.T) {
 	e := testutils.TestEmail()
 	e.TemplateContext = make(map[string]string)
@@ -97,8 +101,8 @@ func TestTemplating(t *testing.T) {
 		}
 
 		// should be no 'filters' in the xsmtpapi params
-		xSmtpApi := decodeXsmtpApi(t, params)
-		if _, ok := xSmtpApi["filters"]; ok {
+		xSMTPAPI := decodeXSMTPAPI(t, params)
+		if _, ok := xSMTPAPI["filters"]; ok {
 			t.FailNow()
 		}
 
@@ -110,7 +114,7 @@ func TestTemplating(t *testing.T) {
 
 	// add some invalid template data that should trigger an error
 	func() {
-		e.TemplateId = "test-template"
+		e.TemplateID = "test-template"
 		e.TemplateContext["not-body"] = "some invalid variable"
 
 		if _, err := b.paramsForEmail(e); err == nil {
@@ -120,7 +124,7 @@ func TestTemplating(t *testing.T) {
 
 	// finally some good data
 	func() {
-		e.TemplateId = "test-template"
+		e.TemplateID = "test-template"
 		e.TemplateContext = map[string]string{"body": "legit"}
 
 		params, err := b.paramsForEmail(e)
@@ -128,8 +132,8 @@ func TestTemplating(t *testing.T) {
 			t.FailNow()
 		}
 
-		xSmtpApi := decodeXsmtpApi(t, params)
-		filters := xSmtpApi["filters"].(map[string]interface{})
+		xSMTPAPI := decodeXSMTPAPI(t, params)
+		filters := xSMTPAPI["filters"].(map[string]interface{})
 		templates := filters["templates"].(map[string]interface{})
 		settings := templates["settings"].(map[string]interface{})
 
@@ -137,12 +141,13 @@ func TestTemplating(t *testing.T) {
 			t.FailNow()
 		}
 
-		if settings["template_id"] != e.TemplateId {
+		if settings["template_id"] != e.TemplateID {
 			t.FailNow()
 		}
 	}()
 }
 
+// TestAttachments checks that attachments are being added properly.
 func TestAttachments(t *testing.T) {
 	e := testutils.TestEmail()
 
@@ -173,12 +178,12 @@ func TestAttachments(t *testing.T) {
 	}
 }
 
-func decodeXsmtpApi(t *testing.T, params url.Values) map[string]interface{} {
-	xSmtpApi := make(map[string]interface{})
+func decodeXSMTPAPI(t *testing.T, params url.Values) map[string]interface{} {
+	xSMTPAPI := make(map[string]interface{})
 
-	if err := json.Unmarshal([]byte(params.Get("x-smtpapi")), &xSmtpApi); err != nil {
+	if err := json.Unmarshal([]byte(params.Get("x-smtpapi")), &xSMTPAPI); err != nil {
 		t.FailNow()
 	}
 
-	return xSmtpApi
+	return xSMTPAPI
 }

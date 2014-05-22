@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// NewEmail constructs a new Email
 func NewEmail() *Email {
 	return &Email{
 		To:              make([]*Recipient, 0),
@@ -20,6 +21,7 @@ func NewEmail() *Email {
 	}
 }
 
+// Email represents an email to be sent, and is the object accepted by all backends.
 type Email struct {
 	// Basic Email Sender/Receiver Information
 	To, Cc, Bcc   []*Recipient
@@ -29,7 +31,7 @@ type Email struct {
 	Subject string
 
 	// The separate chunks
-	HtmlBody, TextBody string
+	HTMLBody, TextBody string
 
 	// Files/data to be attached to the email
 	Attachments []*Attachment
@@ -43,7 +45,7 @@ type Email struct {
 
 	// Many email services offer a templating system where you can pass and ID
 	// and a dictionary of context and they will render the template on their end.
-	TemplateId      string
+	TemplateID      string
 	TemplateContext map[string]string
 
 	// Sender-side user identifier.  Many email services will let you assign identifiers for users

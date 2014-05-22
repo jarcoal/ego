@@ -30,7 +30,7 @@ func main() {
 	email.From = &mail.Address{"Jane Smith", "jane@smith.com"}
 	email.AddRecipient("John Smith", "john@smith.com")
 	email.Subject = "Hello World"
-	email.HtmlBody = "<h1>Hello World</h1>"
+	email.HTMLBody = "<h1>Hello World</h1>"
 
 	backend.DispatchEmail(email)
 }
