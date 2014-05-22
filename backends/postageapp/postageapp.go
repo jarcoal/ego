@@ -29,7 +29,7 @@ type postageAppBackend struct {
 	apiKey string
 }
 
-func (p *postageAppBackend) DispatchEmail(e *ego.Email) error {
+func (p *postageAppBackend) SendEmail(e *ego.Email) error {
 	wrapper, err := p.wrapperForEmail(e)
 	if err != nil {
 		return fmt.Errorf("failed to build postageapp wrapper: %s", err)

@@ -29,7 +29,7 @@ type sendGridBackend struct {
 	username, password string
 }
 
-func (s *sendGridBackend) DispatchEmail(e *ego.Email) error {
+func (s *sendGridBackend) SendEmail(e *ego.Email) error {
 	// get the parameters we're going to be posting to sendgrid
 	params, err := s.paramsForEmail(e)
 	if err != nil {

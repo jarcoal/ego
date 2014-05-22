@@ -17,7 +17,7 @@ func TestDummyLogging(t *testing.T) {
 	b := NewBackend(logger)
 	e := testutils.TestEmail()
 
-	b.DispatchEmail(e)
+	b.SendEmail(e)
 
 	if len(logs) == 0 {
 		t.FailNow()

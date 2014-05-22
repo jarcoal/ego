@@ -30,7 +30,7 @@ type mandrillBackend struct {
 	apiKey string
 }
 
-func (m *mandrillBackend) DispatchEmail(e *ego.Email) error {
+func (m *mandrillBackend) SendEmail(e *ego.Email) error {
 	// convert the email to a mandrillEmail struct that will be json-serialized and sent out
 	wrapper, err := m.mandrillWrapperForEmail(e)
 	if err != nil {

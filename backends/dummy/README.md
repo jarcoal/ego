@@ -23,6 +23,6 @@ func main() {
 	email.Subject = "Hello World"
 	email.HTMLBody = "<h1>Hello World</h1>"
 
-	backend.DispatchEmail(email)
+	backend.SendEmail(email)
 }
 ```

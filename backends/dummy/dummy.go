@@ -24,7 +24,7 @@ type dummyBackend struct {
 	log logger
 }
 
-func (d *dummyBackend) DispatchEmail(e *ego.Email) error {
+func (d *dummyBackend) SendEmail(e *ego.Email) error {
 	if d.log == nil {
 		return nil
 	}
